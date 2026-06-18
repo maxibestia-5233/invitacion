@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Abi 🐱</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#ffd6e0,#fff5f7);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+#pantallaInicio{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+
+#nombre{
+    font-size:4rem;
+    color:#ff4f81;
+    font-weight:bold;
+    transition:.5s;
+}
+
+.gato{
+    font-size:4rem;
+    animation:flotar 2s infinite ease-in-out;
+}
+
+@keyframes flotar{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-15px);}
+}
+
+button{
+    padding:15px 30px;
+    border:none;
+    border-radius:15px;
+    cursor:pointer;
+    background:#ff4f81;
+    color:white;
+    font-size:1rem;
+}
+
+.seccion{
+    display:none;
+    padding:40px;
+    max-width:800px;
+    margin:auto;
+}
+
+.carta{
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+
+.opciones{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:15px;
+    margin-top:20px;
+}
+
+.opcion{
+    background:white;
+    border:2px solid #ffd1dc;
+    padding:15px;
+    border-radius:15px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.opcion:hover{
+    transform:scale(1.05);
+}
+
+.seleccionada{
+    border-color:#ff4f81;
+    background:#ffe6ef;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid #ddd;
+}
+
+#resultado{
+    margin-top:20px;
+    font-size:1.2rem;
+}
+</style>
+</head>
+
+<body>
+
+<audio id="musica" loop>
+<source src="musica.mp3" type="audio/mpeg">
+</audio>
+
+<div id="pantallaInicio">
+
+<div class="gato">🐱</div>
+
+<h1 id="nombre">Genesis</h1>
+
+<br>
+
+<button onclick="iniciar()">
+Abrir carta 💌
+</button>
+
+</div>
+
+<div class="seccion" id="contenido">
+
+<div class="carta">
+
+<h2>Hola Abi 🐱</h2>
+
+<br>
+
+<p>
+Tengo algo que preguntarte...
+</p>
+
+<br>
+
+<p>
+Me gustaría invitarte a salir.
+Pero no necesariamente por un café ☕
+hay varias opciones 😊
+</p>
+
+<br>
+
+<h3>¿Qué te gustaría hacer?</h3>
+
+<div class="opciones">
+
+<div class="opcion" onclick="seleccionar(this,'☕ Café')">
+☕ Café
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🍦 Helado')">
+🍦 Helado
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🍕 Comer algo')">
+🍕 Comer algo
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🎬 Cine')">
+🎬 Cine
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🎳 Boliche')">
+🎳 Boliche
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🚶 Pasear')">
+🚶 Pasear
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🐱 Ver gatitos')">
+🐱 Ver gatitos
+</div>
+
+<div class="opcion" onclick="seleccionar(this,'🎁 Sorpresa')">
+🎁 Sorpresa
+</div>
+
+</div>
+
+<br>
+
+<h3>Fecha</h3>
+<input type="date" id="fecha">
+
+<h3>Hora</h3>
+<input type="time" id="hora">
+
+<br><br>
+
+<button onclick="confirmar()">
+Confirmar ❤️
+</button>
+
+<div id="resultado"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const nombres=[
+"Genesis ✨",
+"Geminis 🌙",
+"Capullo 🌸",
+"Abi 🐱"
+];
+
+let indice=0;
+let opcionElegida="";
+
+setInterval(()=>{
+    indice=(indice+1)%nombres.length;
+    document.getElementById("nombre").innerText=nombres[indice];
+},2000);
+
+function iniciar(){
+
+document.getElementById("pantallaInicio").style.display="none";
+document.getElementById("contenido").style.display="block";
+
+document.getElementById("musica").play();
+}
+
+function seleccionar(elemento,valor){
+
+document.querySelectorAll(".opcion").forEach(o=>{
+    o.classList.remove("seleccionada");
+});
+
+elemento.classList.add("seleccionada");
+
+opcionElegida=valor;
+}
+
+function confirmar(){
+
+const fecha=document.getElementById("fecha").value;
+const hora=document.getElementById("hora").value;
+
+if(!opcionElegida){
+    alert("Selecciona una actividad 😊");
+    return;
+}
+
+document.getElementById("resultado").innerHTML=
+`
+<h3>Tu elección:</h3>
+
+<p>${opcionElegida}</p>
+<p>${fecha}</p>
+<p>${hora}</p>
+
+<br>
+
+<p>Ahora solo falta ponernos de acuerdo 😸❤️</p>
+`;
+}
+
+</script>
+
+</body>
+</html>
