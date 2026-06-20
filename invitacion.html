@@ -234,24 +234,22 @@
 </head>
 <body>
 
-<!-- TOAST -->
-<div class="toast" id="toast">✅ ¡Guardado y correo enviado!</div>
+<div class="toast" id="toast">✅ ¡Guardado!</div>
 
 <!-- PANTALLA 1 -->
 <div id="s-inicio" class="screen active">
   <div class="card">
-    <div style="font-size:3.5rem;margin-bottom:10px;animation:flotar 2s infinite ease-in-out;display:inline-block;">🐱</div>
+    <div style="font-size:3.5rem;margin-bottom:10px;animation:flotar 2s infinite ease-in-out;display:inline-block;">Hola</div>
     <div class="nombre-anim" id="nombre-anim">Genesis ✨</div>
-    <div class="subtitulo">Tienes un mensaje especial esperándote...</div>
-    <button class="btn-principal" onclick="irAPregunta()">Abrir carta 💌</button>
+    <div class="subtitulo">Espero estes bien ...</div>
+    <button class="btn-principal" onclick="clickSiguiente()">Siguiente</button>
   </div>
 </div>
 
 <!-- PANTALLA 2 -->
 <div id="s-pregunta" class="screen">
   <div class="card">
-    <div class="pregunta-titulo">Hola, Genesis...</div>
-    <div style="font-size:1.05rem;color:#e87fa0;margin-bottom:10px;">Te tengo una pregunta</div>
+    <div class="pregunta-titulo">Te quiero preguntar...</div>
     <div class="pregunta-body">¿Quieres salir a un lugar?</div>
     <div class="counter-msg" id="counter-msg"></div>
     <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;min-height:60px;">
@@ -282,7 +280,8 @@
 <!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, doc, getDoc, setDoc, increment, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAiPJ3V_EeMF-URbO_uD2bo4jKNWCVjEzA",
@@ -296,22 +295,47 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
+  // Guardar cita
   window.guardarEnFirebase = async (datos) => {
     await addDoc(collection(db, "citas"), {
       ...datos,
       timestamp: serverTimestamp()
     });
   };
+
+  // Registrar visita al abrir la página
+  window.registrarVisita = async () => {
+    const ref = doc(db, "estadisticas", "general");
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await setDoc(ref, { visitas: increment(1) }, { merge: true });
+    } else {
+      await setDoc(ref, { visitas: 1, clics_siguiente: 0, clics_no: 0 });
+    }
+  };
+
+  // Contar click en Siguiente
+  window.registrarSiguiente = async () => {
+    const ref = doc(db, "estadisticas", "general");
+    await setDoc(ref, { clics_siguiente: increment(1) }, { merge: true });
+  };
+
+  // Contar click en No
+  window.registrarNo = async () => {
+    const ref = doc(db, "estadisticas", "general");
+    await setDoc(ref, { clics_no: increment(1) }, { merge: true });
+  };
+
+  // Registrar visita automáticamente al cargar
+  window.registrarVisita().catch(e => console.error("Visita error:", e));
 </script>
 
 <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-  // ── REEMPLAZA ESTOS 3 VALORES CON LOS TUYOS DE EMAILJS ──
-  const EMAILJS_PUBLIC_KEY  = "3WlXgMqI-EzHhIfNQ";   // Account > API Keys
-  const EMAILJS_SERVICE_ID  = "service_qtmwola";   // Email Services
-  const EMAILJS_TEMPLATE_ID = "template_wxds2ne";  // Email Templates
-
+  const EMAILJS_PUBLIC_KEY  = "3WlXgMqI-EzHhIfNQ";
+  const EMAILJS_SERVICE_ID  = "service_qtmwola";
+  const EMAILJS_TEMPLATE_ID = "template_wxds2ne";
   emailjs.init(EMAILJS_PUBLIC_KEY);
 </script>
 
@@ -358,11 +382,14 @@ function mostrar(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function irAPregunta() {
+
+function clickSiguiente() {
+  window.registrarSiguiente().catch(e => console.error("Siguiente error:", e));
   mostrar('s-pregunta');
   document.getElementById('btn-no').style.display = 'block';
   posicionarNoCentro();
 }
+
 function irACita() {
   document.getElementById('btn-no').style.display = 'none';
   mostrar('s-cita');
@@ -376,10 +403,10 @@ const mensajesNo = [
   "yyyy no puede ser",
   "Creo que si le vuelves a dar ahora si funciona",
   "Bromaaa jajaj",
-  "Ya pue ya ahora si",
+  "Ya pues ya, ahora si",
   "Esta bien pues ya le puedes dar",
   "O no jajaja",
-  "Si no quieres de verdad me puedes mandar mensaje 👀",
+  "Si no quieres de verdad mandame mensaje 👀",
   "Le puedes dar si, si quieres",
   "Es una recomendacion, creo que el Si funciona",
   "De verdad, haber intentale de prueba",
@@ -391,6 +418,7 @@ function posicionarNoCentro() {
 }
 function escaparNo() {
   noCount++;
+  window.registrarNo().catch(e => console.error("No error:", e));
   const msg = document.getElementById('counter-msg');
   if (msg) msg.textContent = mensajesNo[Math.min(noCount - 1, mensajesNo.length - 1)];
   const btn = document.getElementById('btn-no');
@@ -404,7 +432,7 @@ function escaparNo() {
 // ── OPCIONES CITA ──
 const actividades = [
   "☕ Café", "⛱️ Playa", "🍕 Comer algo",
-  "🎬 Cine", "🎳 Boliche", "🚶 Parque",
+  "🎬 Cine", "🐘 Zoo", "🚶 Parque",
   "🐋 Sea world", "🌽 Tostilocos", "🎁 Sorprendeme"
 ];
 function rellenarOpciones() {
@@ -431,7 +459,7 @@ function mostrarToast(msg, color) {
   setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── CONFIRMAR + FIREBASE + EMAILJS ──
+// ── CONFIRMAR ──
 async function confirmar() {
   const sel = document.querySelector('.opcion-btn.sel');
   if (!sel) { alert('Selecciona una actividad'); return; }
@@ -450,7 +478,7 @@ async function confirmar() {
 
   const datos = { actividad, fecha: fechaFmt, hora: horaFmt };
 
-  // 1. Guardar en Firebase
+  // 1. Firebase
   try {
     await window.guardarEnFirebase(datos);
   } catch (e) {
@@ -461,7 +489,7 @@ async function confirmar() {
     return;
   }
 
-  // 2. Enviar correo con EmailJS
+  // 2. EmailJS
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email:  "aaronarcegonzalez66@gmail.com",
@@ -471,20 +499,16 @@ async function confirmar() {
     });
   } catch (e) {
     console.error("EmailJS error:", e);
-    mostrarToast('✅ Guardado en Firebase, pero el correo falló', '#f97');
+    mostrarToast('✅ Guardado, pero el correo falló', '#f97');
   }
 
-  // 3. Mostrar resultado
+  // 3. Resultado
   document.getElementById('resultado').innerHTML = `
     <div class="resultado-box">
-      <h3>¡Nuestra cita queda así! 🎊</h3>
+      <h3>Ok entonces quedo</h3>
       <div>🎯 Actividad: <strong>${actividad}</strong></div>
       <div>📅 Fecha: <strong>${fechaFmt}</strong></div>
       <div>🕐 Hora: <strong>${horaFmt}</strong></div>
-      <br>
-      <div style="text-align:center;font-size:1.15rem;font-weight:800;color:#ff4f81;">
-        okey okey anotado 😸❤️
-      </div>
     </div>
   `;
 
