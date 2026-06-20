@@ -85,7 +85,7 @@
     box-shadow: 0 4px 22px rgba(255,79,129,0.38);
     transition: transform 0.2s, box-shadow 0.2s;
   }
-  .btn-principal:hover { transform: scale(1.06); box-shadow: 0 6px 30px rgba(255,79,129,0.48); }
+  .btn-principal:hover { transform: scale(1.06); }
 
   .pregunta-titulo {
     font-size: 1.85rem;
@@ -198,6 +198,7 @@
     transition: transform 0.2s;
   }
   .btn-confirmar:hover { transform: scale(1.03); }
+  .btn-confirmar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   .resultado-box {
     background: linear-gradient(135deg, #ffe6ef, #fff0f5);
@@ -211,10 +212,32 @@
     text-align: left;
   }
   .resultado-box h3 { font-size: 1.2rem; color: #ff4f81; margin-bottom: 8px; text-align: center; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #ff4f81;
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-family: inherit;
+    font-size: 0.95rem;
+    z-index: 99999;
+    transition: transform 0.4s ease;
+    box-shadow: 0 4px 20px rgba(255,79,129,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
+<!-- TOAST -->
+<div class="toast" id="toast">✅ ¡Guardado y correo enviado!</div>
+
+<!-- PANTALLA 1 -->
 <div id="s-inicio" class="screen active">
   <div class="card">
     <div style="font-size:3.5rem;margin-bottom:10px;animation:flotar 2s infinite ease-in-out;display:inline-block;">🐱</div>
@@ -224,12 +247,12 @@
   </div>
 </div>
 
+<!-- PANTALLA 2 -->
 <div id="s-pregunta" class="screen">
   <div class="card">
-    <div style="font-size:3rem;margin-bottom:14px;">🐱💕</div>
     <div class="pregunta-titulo">Hola, Genesis...</div>
-    <div style="font-size:1.05rem;color:#e87fa0;margin-bottom:10px;">Tengo algo muy importante que preguntarte:</div>
-    <div class="pregunta-body">¿Quieres tener una cita conmigo? 🥺</div>
+    <div style="font-size:1.05rem;color:#e87fa0;margin-bottom:10px;">Te tengo una pregunta</div>
+    <div class="pregunta-body">¿Quieres salir a un lugar?</div>
     <div class="counter-msg" id="counter-msg"></div>
     <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;min-height:60px;">
       <button class="btn-si" onclick="irACita()">¡Sí! 💖</button>
@@ -237,8 +260,10 @@
   </div>
 </div>
 
+<!-- BTN NO FLOTANTE -->
 <button class="btn-no" id="btn-no" onmouseover="escaparNo()" onclick="escaparNo()">No 🙄</button>
 
+<!-- PANTALLA 3 -->
 <div id="s-cita" class="screen">
   <div class="card" style="max-width:560px;">
     <div style="font-size:2.5rem;margin-bottom:10px;">🎉💖</div>
@@ -249,12 +274,49 @@
     <input type="date" id="fecha">
     <div class="campo-label">🕐 Hora</div>
     <input type="time" id="hora">
-    <button class="btn-confirmar" onclick="confirmar()">Confirmar nuestra cita ❤️</button>
+    <button class="btn-confirmar" id="btn-confirmar" onclick="confirmar()">Confirmar nuestra cita ❤️</button>
     <div id="resultado"></div>
   </div>
 </div>
 
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiPJ3V_EeMF-URbO_uD2bo4jKNWCVjEzA",
+    authDomain: "invitacion-544a5.firebaseapp.com",
+    projectId: "invitacion-544a5",
+    storageBucket: "invitacion-544a5.firebasestorage.app",
+    messagingSenderId: "738500914133",
+    appId: "1:738500914133:web:e73e128d04700d49906b5c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.guardarEnFirebase = async (datos) => {
+    await addDoc(collection(db, "citas"), {
+      ...datos,
+      timestamp: serverTimestamp()
+    });
+  };
+</script>
+
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+  // ── REEMPLAZA ESTOS 3 VALORES CON LOS TUYOS DE EMAILJS ──
+  const EMAILJS_PUBLIC_KEY  = "3WlXgMqI-EzHhIfNQ";   // Account > API Keys
+  const EMAILJS_SERVICE_ID  = "service_qtmwola";   // Email Services
+  const EMAILJS_TEMPLATE_ID = "template_wxds2ne";  // Email Templates
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+</script>
+
+<script>
+// ── NOMBRES ANIMADOS ──
 const nombres = ["Genesis ✨", "Geminis 🌙", "Capullo 🌸", "Abi 🐱"];
 let nombreIdx = 0;
 setInterval(() => {
@@ -266,19 +328,19 @@ setInterval(() => {
   }
 }, 2200);
 
+// ── GATITOS ──
 const catData = [
-  { emoji: "🐱", top: 5,  dur: 12, delay: 0,   hue: 0   },
-  { emoji: "🐈",  top: 15, dur: 9,  delay: -3,  hue: 40  },
-  { emoji: "😺", top: 25, dur: 14, delay: -7,  hue: 80  },
+  { emoji: "🐈", top: 5,  dur: 12, delay: 0,   hue: 0   },
+  { emoji: "🐈", top: 15, dur: 9,  delay: -3,  hue: 40  },
+  { emoji: "🐈", top: 25, dur: 14, delay: -7,  hue: 80  },
   { emoji: "🐈‍⬛", top: 35, dur: 10, delay: -1,  hue: 120 },
-  { emoji: "😸", top: 45, dur: 16, delay: -5,  hue: 180 },
-  { emoji: "🐱", top: 55, dur: 11, delay: -9,  hue: 220 },
-  { emoji: "😻", top: 65, dur: 13, delay: -2,  hue: 270 },
-  { emoji: "🐈",  top: 75, dur: 8,  delay: -6,  hue: 320 },
-  { emoji: "😾", top: 85, dur: 15, delay: -4,  hue: 160 },
-  { emoji: "🐱", top: 92, dur: 10, delay: -8,  hue: 60  },
+  { emoji: "🐈", top: 45, dur: 16, delay: -5,  hue: 180 },
+  { emoji: "🐈", top: 55, dur: 11, delay: -9,  hue: 220 },
+  { emoji: "🐈", top: 65, dur: 13, delay: -2,  hue: 270 },
+  { emoji: "🐈", top: 75, dur: 8,  delay: -6,  hue: 320 },
+  { emoji: "🐈", top: 85, dur: 15, delay: -4,  hue: 160 },
+  { emoji: "🐈", top: 92, dur: 10, delay: -8,  hue: 60  },
 ];
-
 catData.forEach(c => {
   const el = document.createElement('div');
   el.className = 'cat-walker';
@@ -291,65 +353,60 @@ catData.forEach(c => {
   document.body.appendChild(el);
 });
 
+// ── NAVEGACIÓN ──
 function mostrar(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-
 function irAPregunta() {
   mostrar('s-pregunta');
   document.getElementById('btn-no').style.display = 'block';
   posicionarNoCentro();
 }
-
 function irACita() {
   document.getElementById('btn-no').style.display = 'none';
   mostrar('s-cita');
   rellenarOpciones();
 }
 
+// ── BOTÓN NO ──
 let noCount = 0;
 const mensajesNo = [
-  "Ese botón claramente decidió irse a caminar 🐾",
-  "¡Inténtalo de nuevo! 😂 (spoiler: no funciona)",
-  "El 'No' está muy ocupado huyendo 🏃",
-  "Creo que ese botón tiene miedo de ti 😹",
-  "¿En serio sigues intentando? 🤭",
-  "El 'No' mandó mensaje que está de vacaciones 🏖️",
-  "Ok claramente el universo dice que es SÍ 💫",
-  "El 'No' renunció. Ya no trabaja aquí. 📝",
-  "Ese botón pidió su retiro anticipado 😌",
-  "Pista: el otro botón es mucho más estable 👀",
-  "El 'No' solicitó asilo en otro país 🌎",
-  "Ya mejor dale clic a SÍ, que ese no se deja 😂",
+  "Le diste no?",
+  "yyyy no puede ser",
+  "Creo que si le vuelves a dar ahora si funciona",
+  "Bromaaa jajaj",
+  "Ya pue ya ahora si",
+  "Esta bien pues ya le puedes dar",
+  "O no jajaja",
+  "Si no quieres de verdad me puedes mandar mensaje 👀",
+  "Le puedes dar si, si quieres",
+  "Es una recomendacion, creo que el Si funciona",
+  "De verdad, haber intentale de prueba",
 ];
-
 function posicionarNoCentro() {
   const btn = document.getElementById('btn-no');
   btn.style.left = (window.innerWidth / 2 + 20) + 'px';
   btn.style.top  = (window.innerHeight / 2 + 40) + 'px';
 }
-
 function escaparNo() {
   noCount++;
   const msg = document.getElementById('counter-msg');
   if (msg) msg.textContent = mensajesNo[Math.min(noCount - 1, mensajesNo.length - 1)];
   const btn = document.getElementById('btn-no');
-  const bw = btn.offsetWidth  || 140;
+  const bw = btn.offsetWidth || 140;
   const bh = btn.offsetHeight || 52;
   const margin = 20;
-  const maxX = window.innerWidth  - bw - margin;
-  const maxY = window.innerHeight - bh - margin;
-  btn.style.left = (margin + Math.random() * maxX) + 'px';
-  btn.style.top  = (margin + Math.random() * maxY) + 'px';
+  btn.style.left = (margin + Math.random() * (window.innerWidth  - bw - margin * 2)) + 'px';
+  btn.style.top  = (margin + Math.random() * (window.innerHeight - bh - margin * 2)) + 'px';
 }
 
+// ── OPCIONES CITA ──
 const actividades = [
-  "☕ Café", "🍦 Helado", "🍕 Comer algo",
-  "🎬 Cine", "🎳 Boliche", "🚶 Pasear",
-  "🐱 Ver gatitos", "🎁 Sorpresa"
+  "☕ Café", "⛱️ Playa", "🍕 Comer algo",
+  "🎬 Cine", "🎳 Boliche", "🚶 Parque",
+  "🐋 Sea world", "🌽 Tostilocos", "🎁 Sorprendeme"
 ];
-
 function rellenarOpciones() {
   const grid = document.getElementById('opciones');
   grid.innerHTML = '';
@@ -365,27 +422,75 @@ function rellenarOpciones() {
   });
 }
 
-function confirmar() {
+// ── TOAST ──
+function mostrarToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || '#ff4f81';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── CONFIRMAR + FIREBASE + EMAILJS ──
+async function confirmar() {
   const sel = document.querySelector('.opcion-btn.sel');
-  if (!sel) { alert('Selecciona una actividad 😊'); return; }
+  if (!sel) { alert('Selecciona una actividad'); return; }
+
   const fecha = document.getElementById('fecha').value;
   const hora  = document.getElementById('hora').value;
   const fechaFmt = fecha
     ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
-    : 'Por definir 📅';
-  const horaFmt = hora || 'Por definir 🕐';
+    : 'Por definir';
+  const horaFmt = hora || 'Por definir';
+  const actividad = sel.textContent.trim();
+
+  const btnConf = document.getElementById('btn-confirmar');
+  btnConf.disabled = true;
+  btnConf.textContent = 'Guardando... ⏳';
+
+  const datos = { actividad, fecha: fechaFmt, hora: horaFmt };
+
+  // 1. Guardar en Firebase
+  try {
+    await window.guardarEnFirebase(datos);
+  } catch (e) {
+    console.error("Firebase error:", e);
+    mostrarToast('⚠️ Error al guardar en Firebase', '#e05');
+    btnConf.disabled = false;
+    btnConf.textContent = 'Confirmar nuestra cita ❤️';
+    return;
+  }
+
+  // 2. Enviar correo con EmailJS
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  "aaronarcegonzalez66@gmail.com",
+      actividad: actividad,
+      fecha:     fechaFmt,
+      hora:      horaFmt,
+    });
+  } catch (e) {
+    console.error("EmailJS error:", e);
+    mostrarToast('✅ Guardado en Firebase, pero el correo falló', '#f97');
+  }
+
+  // 3. Mostrar resultado
   document.getElementById('resultado').innerHTML = `
     <div class="resultado-box">
       <h3>¡Nuestra cita queda así! 🎊</h3>
-      <div>🎯 Actividad: <strong>${sel.textContent}</strong></div>
+      <div>🎯 Actividad: <strong>${actividad}</strong></div>
       <div>📅 Fecha: <strong>${fechaFmt}</strong></div>
       <div>🕐 Hora: <strong>${horaFmt}</strong></div>
       <br>
       <div style="text-align:center;font-size:1.15rem;font-weight:800;color:#ff4f81;">
-        ¡Ya tengo muchas ganas! 😸❤️
+        okey okey anotado 😸❤️
       </div>
     </div>
   `;
+
+  mostrarToast('✅ ¡Guardado y correo enviado!');
+  btnConf.disabled = false;
+  btnConf.textContent = 'Confirmar nuestra cita ❤️';
 }
 
 document.getElementById('btn-no').style.display = 'none';
