@@ -3,272 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Para Abi 🐱</title>
-
+<title>Para Genesis 🐱</title>
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
-body{
-    font-family:'Segoe UI',sans-serif;
-    background:linear-gradient(135deg,#ffd6e0,#fff5f7);
-    min-height:100vh;
-    overflow-x:hidden;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-#pantallaInicio{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
-}
+  body {
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffd6e7 0%, #fff0f5 50%, #ffe4f0 100%);
+    overflow-x: hidden;
+    position: relative;
+  }
 
-#nombre{
-    font-size:4rem;
-    color:#ff4f81;
-    font-weight:bold;
-    transition:.5s;
-}
+  .cat-walker {
+    position: fixed;
+    font-size: 2rem;
+    animation: walk-cat linear infinite;
+    pointer-events: none;
+    z-index: 0;
+    white-space: nowrap;
+  }
 
-.gato{
-    font-size:4rem;
-    animation:flotar 2s infinite ease-in-out;
-}
+  @keyframes walk-cat {
+    0%   { transform: translateX(-100px) scaleX(1); }
+    49%  { transform: translateX(calc(100vw + 100px)) scaleX(1); }
+    50%  { transform: translateX(calc(100vw + 100px)) scaleX(-1); }
+    99%  { transform: translateX(-100px) scaleX(-1); }
+    100% { transform: translateX(-100px) scaleX(1); }
+  }
 
-@keyframes flotar{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-15px);}
-}
+  @keyframes flotar {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-14px); }
+  }
 
-button{
-    padding:15px 30px;
-    border:none;
-    border-radius:15px;
-    cursor:pointer;
-    background:#ff4f81;
-    color:white;
-    font-size:1rem;
-}
+  .screen {
+    display: none;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    z-index: 10;
+  }
+  .screen.active { display: flex; }
 
-.seccion{
-    display:none;
-    padding:40px;
-    max-width:800px;
-    margin:auto;
-}
+  .card {
+    background: rgba(255,255,255,0.93);
+    border-radius: 30px;
+    padding: 44px 38px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 48px rgba(255,90,140,0.18);
+    border: 1.5px solid rgba(255,160,185,0.35);
+  }
 
-.carta{
-    background:white;
-    padding:30px;
-    border-radius:20px;
-    box-shadow:0 10px 25px rgba(0,0,0,.1);
-}
+  .nombre-anim {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: #ff4f81;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    transition: opacity 0.4s;
+  }
+  .subtitulo { font-size: 1.05rem; color: #e87fa0; margin-bottom: 28px; }
 
-.opciones{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:15px;
-    margin-top:20px;
-}
+  .btn-principal {
+    background: linear-gradient(135deg, #ff4f81, #ff85a1);
+    color: white;
+    border: none;
+    padding: 16px 42px;
+    border-radius: 50px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 22px rgba(255,79,129,0.38);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-principal:hover { transform: scale(1.06); box-shadow: 0 6px 30px rgba(255,79,129,0.48); }
 
-.opcion{
-    background:white;
-    border:2px solid #ffd1dc;
-    padding:15px;
-    border-radius:15px;
-    cursor:pointer;
-    transition:.3s;
-}
+  .pregunta-titulo {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #c0325a;
+    margin-bottom: 8px;
+  }
+  .pregunta-body {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ff4f81;
+    margin: 18px 0 30px;
+    line-height: 1.3;
+  }
 
-.opcion:hover{
-    transform:scale(1.05);
-}
+  .btn-si {
+    background: linear-gradient(135deg, #ff4f81, #ff85a1);
+    color: white;
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 22px rgba(255,79,129,0.38);
+    transition: transform 0.2s;
+  }
+  .btn-si:hover { transform: scale(1.08); }
 
-.seleccionada{
-    border-color:#ff4f81;
-    background:#ffe6ef;
-}
+  .btn-no {
+    position: fixed;
+    background: rgba(255,255,255,0.8);
+    color: #b05070;
+    border: 2px solid #ffb6c8;
+    padding: 14px 38px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    z-index: 9999;
+    transition: transform 0.15s;
+  }
+  .btn-no:hover { transform: scale(0.9); }
 
-input,select{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-    border:1px solid #ddd;
-}
+  .counter-msg {
+    font-size: 0.88rem;
+    color: #e87fa0;
+    font-style: italic;
+    min-height: 22px;
+    margin-bottom: 16px;
+  }
 
-#resultado{
-    margin-top:20px;
-    font-size:1.2rem;
-}
+  .opciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .opcion-btn {
+    background: white;
+    border: 2px solid #ffd1dc;
+    padding: 13px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 700;
+    color: #c0325a;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .opcion-btn:hover { transform: scale(1.06); border-color: #ff4f81; background: #fff0f5; }
+  .opcion-btn.sel { border-color: #ff4f81; background: #ffe6ef; }
+
+  .campo-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #c0325a;
+    text-align: left;
+    margin: 14px 0 4px;
+  }
+  input[type=date], input[type=time] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid #ffd1dc;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #c0325a;
+    background: white;
+    outline: none;
+  }
+  input:focus { border-color: #ff4f81; }
+
+  .btn-confirmar {
+    background: linear-gradient(135deg, #ff4f81, #ff85a1);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 22px;
+    width: 100%;
+    box-shadow: 0 4px 22px rgba(255,79,129,0.35);
+    transition: transform 0.2s;
+  }
+  .btn-confirmar:hover { transform: scale(1.03); }
+
+  .resultado-box {
+    background: linear-gradient(135deg, #ffe6ef, #fff0f5);
+    border-radius: 20px;
+    padding: 22px;
+    margin-top: 18px;
+    border: 1.5px solid #ffb6c8;
+    font-size: 1rem;
+    color: #c0325a;
+    line-height: 2;
+    text-align: left;
+  }
+  .resultado-box h3 { font-size: 1.2rem; color: #ff4f81; margin-bottom: 8px; text-align: center; }
 </style>
 </head>
-
 <body>
 
-<audio id="musica" loop>
-<source src="musica.mp3" type="audio/mpeg">
-</audio>
-
-<div id="pantallaInicio">
-
-<div class="gato">🐱</div>
-
-<h1 id="nombre">Genesis</h1>
-
-<br>
-
-<button onclick="iniciar()">
-Abrir carta 💌
-</button>
-
+<div id="s-inicio" class="screen active">
+  <div class="card">
+    <div style="font-size:3.5rem;margin-bottom:10px;animation:flotar 2s infinite ease-in-out;display:inline-block;">🐱</div>
+    <div class="nombre-anim" id="nombre-anim">Genesis ✨</div>
+    <div class="subtitulo">Tienes un mensaje especial esperándote...</div>
+    <button class="btn-principal" onclick="irAPregunta()">Abrir carta 💌</button>
+  </div>
 </div>
 
-<div class="seccion" id="contenido">
-
-<div class="carta">
-
-<h2>Hola Abi 🐱</h2>
-
-<br>
-
-<p>
-Tengo algo que preguntarte...
-</p>
-
-<br>
-
-<p>
-Me gustaría invitarte a salir.
-Pero no necesariamente por un café ☕
-hay varias opciones 😊
-</p>
-
-<br>
-
-<h3>¿Qué te gustaría hacer?</h3>
-
-<div class="opciones">
-
-<div class="opcion" onclick="seleccionar(this,'☕ Café')">
-☕ Café
+<div id="s-pregunta" class="screen">
+  <div class="card">
+    <div style="font-size:3rem;margin-bottom:14px;">🐱💕</div>
+    <div class="pregunta-titulo">Hola, Genesis...</div>
+    <div style="font-size:1.05rem;color:#e87fa0;margin-bottom:10px;">Tengo algo muy importante que preguntarte:</div>
+    <div class="pregunta-body">¿Quieres tener una cita conmigo? 🥺</div>
+    <div class="counter-msg" id="counter-msg"></div>
+    <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;min-height:60px;">
+      <button class="btn-si" onclick="irACita()">¡Sí! 💖</button>
+    </div>
+  </div>
 </div>
 
-<div class="opcion" onclick="seleccionar(this,'🍦 Helado')">
-🍦 Helado
-</div>
+<button class="btn-no" id="btn-no" onmouseover="escaparNo()" onclick="escaparNo()">No 🙄</button>
 
-<div class="opcion" onclick="seleccionar(this,'🍕 Comer algo')">
-🍕 Comer algo
-</div>
-
-<div class="opcion" onclick="seleccionar(this,'🎬 Cine')">
-🎬 Cine
-</div>
-
-<div class="opcion" onclick="seleccionar(this,'🎳 Boliche')">
-🎳 Boliche
-</div>
-
-<div class="opcion" onclick="seleccionar(this,'🚶 Pasear')">
-🚶 Pasear
-</div>
-
-<div class="opcion" onclick="seleccionar(this,'🐱 Ver gatitos')">
-🐱 Ver gatitos
-</div>
-
-<div class="opcion" onclick="seleccionar(this,'🎁 Sorpresa')">
-🎁 Sorpresa
-</div>
-
-</div>
-
-<br>
-
-<h3>Fecha</h3>
-<input type="date" id="fecha">
-
-<h3>Hora</h3>
-<input type="time" id="hora">
-
-<br><br>
-
-<button onclick="confirmar()">
-Confirmar ❤️
-</button>
-
-<div id="resultado"></div>
-
-</div>
-
+<div id="s-cita" class="screen">
+  <div class="card" style="max-width:560px;">
+    <div style="font-size:2.5rem;margin-bottom:10px;">🎉💖</div>
+    <div style="font-size:1.6rem;font-weight:800;color:#c0325a;margin-bottom:6px;">¡Sabía que dirías que sí!</div>
+    <div style="font-size:1rem;color:#e87fa0;margin-bottom:18px;">Ahora cuéntame, ¿qué te gustaría hacer?</div>
+    <div class="opciones-grid" id="opciones"></div>
+    <div class="campo-label">📅 Fecha</div>
+    <input type="date" id="fecha">
+    <div class="campo-label">🕐 Hora</div>
+    <input type="time" id="hora">
+    <button class="btn-confirmar" onclick="confirmar()">Confirmar nuestra cita ❤️</button>
+    <div id="resultado"></div>
+  </div>
 </div>
 
 <script>
+const nombres = ["Genesis ✨", "Geminis 🌙", "Capullo 🌸", "Abi 🐱"];
+let nombreIdx = 0;
+setInterval(() => {
+  nombreIdx = (nombreIdx + 1) % nombres.length;
+  const el = document.getElementById('nombre-anim');
+  if (el) {
+    el.style.opacity = '0';
+    setTimeout(() => { el.textContent = nombres[nombreIdx]; el.style.opacity = '1'; }, 350);
+  }
+}, 2200);
 
-const nombres=[
-"Genesis ✨",
-"Geminis 🌙",
-"Capullo 🌸",
-"Abi 🐱"
+const catData = [
+  { emoji: "🐱", top: 5,  dur: 12, delay: 0,   hue: 0   },
+  { emoji: "🐈",  top: 15, dur: 9,  delay: -3,  hue: 40  },
+  { emoji: "😺", top: 25, dur: 14, delay: -7,  hue: 80  },
+  { emoji: "🐈‍⬛", top: 35, dur: 10, delay: -1,  hue: 120 },
+  { emoji: "😸", top: 45, dur: 16, delay: -5,  hue: 180 },
+  { emoji: "🐱", top: 55, dur: 11, delay: -9,  hue: 220 },
+  { emoji: "😻", top: 65, dur: 13, delay: -2,  hue: 270 },
+  { emoji: "🐈",  top: 75, dur: 8,  delay: -6,  hue: 320 },
+  { emoji: "😾", top: 85, dur: 15, delay: -4,  hue: 160 },
+  { emoji: "🐱", top: 92, dur: 10, delay: -8,  hue: 60  },
 ];
 
-let indice=0;
-let opcionElegida="";
-
-setInterval(()=>{
-    indice=(indice+1)%nombres.length;
-    document.getElementById("nombre").innerText=nombres[indice];
-},2000);
-
-function iniciar(){
-
-document.getElementById("pantallaInicio").style.display="none";
-document.getElementById("contenido").style.display="block";
-
-document.getElementById("musica").play();
-}
-
-function seleccionar(elemento,valor){
-
-document.querySelectorAll(".opcion").forEach(o=>{
-    o.classList.remove("seleccionada");
+catData.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'cat-walker';
+  el.textContent = c.emoji;
+  el.style.top = c.top + 'vh';
+  el.style.animationDuration = c.dur + 's';
+  el.style.animationDelay = c.delay + 's';
+  el.style.filter = `hue-rotate(${c.hue}deg) drop-shadow(0 2px 6px rgba(0,0,0,0.12))`;
+  el.style.opacity = '0.75';
+  document.body.appendChild(el);
 });
 
-elemento.classList.add("seleccionada");
-
-opcionElegida=valor;
+function mostrar(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function confirmar(){
-
-const fecha=document.getElementById("fecha").value;
-const hora=document.getElementById("hora").value;
-
-if(!opcionElegida){
-    alert("Selecciona una actividad 😊");
-    return;
+function irAPregunta() {
+  mostrar('s-pregunta');
+  document.getElementById('btn-no').style.display = 'block';
+  posicionarNoCentro();
 }
 
-document.getElementById("resultado").innerHTML=
-`
-<h3>Tu elección:</h3>
-
-<p>${opcionElegida}</p>
-<p>${fecha}</p>
-<p>${hora}</p>
-
-<br>
-
-<p>Ahora solo falta ponernos de acuerdo 😸❤️</p>
-`;
+function irACita() {
+  document.getElementById('btn-no').style.display = 'none';
+  mostrar('s-cita');
+  rellenarOpciones();
 }
 
+let noCount = 0;
+const mensajesNo = [
+  "Ese botón claramente decidió irse a caminar 🐾",
+  "¡Inténtalo de nuevo! 😂 (spoiler: no funciona)",
+  "El 'No' está muy ocupado huyendo 🏃",
+  "Creo que ese botón tiene miedo de ti 😹",
+  "¿En serio sigues intentando? 🤭",
+  "El 'No' mandó mensaje que está de vacaciones 🏖️",
+  "Ok claramente el universo dice que es SÍ 💫",
+  "El 'No' renunció. Ya no trabaja aquí. 📝",
+  "Ese botón pidió su retiro anticipado 😌",
+  "Pista: el otro botón es mucho más estable 👀",
+  "El 'No' solicitó asilo en otro país 🌎",
+  "Ya mejor dale clic a SÍ, que ese no se deja 😂",
+];
+
+function posicionarNoCentro() {
+  const btn = document.getElementById('btn-no');
+  btn.style.left = (window.innerWidth / 2 + 20) + 'px';
+  btn.style.top  = (window.innerHeight / 2 + 40) + 'px';
+}
+
+function escaparNo() {
+  noCount++;
+  const msg = document.getElementById('counter-msg');
+  if (msg) msg.textContent = mensajesNo[Math.min(noCount - 1, mensajesNo.length - 1)];
+  const btn = document.getElementById('btn-no');
+  const bw = btn.offsetWidth  || 140;
+  const bh = btn.offsetHeight || 52;
+  const margin = 20;
+  const maxX = window.innerWidth  - bw - margin;
+  const maxY = window.innerHeight - bh - margin;
+  btn.style.left = (margin + Math.random() * maxX) + 'px';
+  btn.style.top  = (margin + Math.random() * maxY) + 'px';
+}
+
+const actividades = [
+  "☕ Café", "🍦 Helado", "🍕 Comer algo",
+  "🎬 Cine", "🎳 Boliche", "🚶 Pasear",
+  "🐱 Ver gatitos", "🎁 Sorpresa"
+];
+
+function rellenarOpciones() {
+  const grid = document.getElementById('opciones');
+  grid.innerHTML = '';
+  actividades.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = 'opcion-btn';
+    btn.textContent = a;
+    btn.onclick = () => {
+      document.querySelectorAll('.opcion-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function confirmar() {
+  const sel = document.querySelector('.opcion-btn.sel');
+  if (!sel) { alert('Selecciona una actividad 😊'); return; }
+  const fecha = document.getElementById('fecha').value;
+  const hora  = document.getElementById('hora').value;
+  const fechaFmt = fecha
+    ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+    : 'Por definir 📅';
+  const horaFmt = hora || 'Por definir 🕐';
+  document.getElementById('resultado').innerHTML = `
+    <div class="resultado-box">
+      <h3>¡Nuestra cita queda así! 🎊</h3>
+      <div>🎯 Actividad: <strong>${sel.textContent}</strong></div>
+      <div>📅 Fecha: <strong>${fechaFmt}</strong></div>
+      <div>🕐 Hora: <strong>${horaFmt}</strong></div>
+      <br>
+      <div style="text-align:center;font-size:1.15rem;font-weight:800;color:#ff4f81;">
+        ¡Ya tengo muchas ganas! 😸❤️
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById('btn-no').style.display = 'none';
 </script>
-
 </body>
 </html>
