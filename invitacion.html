@@ -62,6 +62,16 @@
     border: 1.5px solid rgba(255,160,185,0.35);
   }
 
+  /* ── HOLA en rosa igual que nombre-anim ── */
+  .hola-text {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #ff4f81;
+    margin-bottom: 10px;
+    animation: flotar 2s infinite ease-in-out;
+    display: inline-block;
+  }
+
   .nombre-anim {
     font-size: 3.2rem;
     font-weight: 800;
@@ -113,11 +123,13 @@
     cursor: pointer;
     box-shadow: 0 4px 22px rgba(255,79,129,0.38);
     transition: transform 0.2s;
+    position: relative;
+    z-index: 10;
   }
   .btn-si:hover { transform: scale(1.08); }
 
+  /* ── NO: empieza estático, luego se vuelve fixed ── */
   .btn-no {
-    position: fixed;
     background: rgba(255,255,255,0.8);
     color: #b05070;
     border: 2px solid #ffb6c8;
@@ -127,10 +139,13 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    z-index: 9999;
     transition: transform 0.15s;
   }
   .btn-no:hover { transform: scale(0.9); }
+  .btn-no.huyendo {
+    position: fixed;
+    z-index: 9999;
+  }
 
   .counter-msg {
     font-size: 0.88rem;
@@ -239,7 +254,8 @@
 <!-- PANTALLA 1 -->
 <div id="s-inicio" class="screen active">
   <div class="card">
-    <div style="font-size:3.5rem;margin-bottom:10px;animation:flotar 2s infinite ease-in-out;display:inline-block;">Hola</div>
+    <!-- HOLA en rosa igual que los demás textos -->
+    <div class="hola-text">Hola</div>
     <div class="nombre-anim" id="nombre-anim">Genesis ✨</div>
     <div class="subtitulo">Espero estes bien ...</div>
     <button class="btn-principal" onclick="clickSiguiente()">Siguiente</button>
@@ -252,14 +268,13 @@
     <div class="pregunta-titulo">Te quiero preguntar...</div>
     <div class="pregunta-body">¿Quieres salir a un lugar?</div>
     <div class="counter-msg" id="counter-msg"></div>
-    <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;min-height:60px;">
+    <!-- Sí y No juntos al inicio -->
+    <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;min-height:60px;" id="btn-area">
       <button class="btn-si" onclick="irACita()">¡Sí! 💖</button>
+      <button class="btn-no" id="btn-no" onmouseover="escaparNo()" onclick="escaparNo()">No 🙄</button>
     </div>
   </div>
 </div>
-
-<!-- BTN NO FLOTANTE -->
-<button class="btn-no" id="btn-no" onmouseover="escaparNo()" onclick="escaparNo()">No 🙄</button>
 
 <!-- PANTALLA 3 -->
 <div id="s-cita" class="screen">
@@ -295,7 +310,6 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // Guardar cita
   window.guardarEnFirebase = async (datos) => {
     await addDoc(collection(db, "citas"), {
       ...datos,
@@ -303,7 +317,6 @@
     });
   };
 
-  // Registrar visita al abrir la página
   window.registrarVisita = async () => {
     const ref = doc(db, "estadisticas", "general");
     const snap = await getDoc(ref);
@@ -314,19 +327,16 @@
     }
   };
 
-  // Contar click en Siguiente
   window.registrarSiguiente = async () => {
     const ref = doc(db, "estadisticas", "general");
     await setDoc(ref, { clics_siguiente: increment(1) }, { merge: true });
   };
 
-  // Contar click en No
   window.registrarNo = async () => {
     const ref = doc(db, "estadisticas", "general");
     await setDoc(ref, { clics_no: increment(1) }, { merge: true });
   };
 
-  // Registrar visita automáticamente al cargar
   window.registrarVisita().catch(e => console.error("Visita error:", e));
 </script>
 
@@ -386,18 +396,20 @@ function mostrar(id) {
 function clickSiguiente() {
   window.registrarSiguiente().catch(e => console.error("Siguiente error:", e));
   mostrar('s-pregunta');
-  document.getElementById('btn-no').style.display = 'block';
-  posicionarNoCentro();
 }
 
 function irACita() {
-  document.getElementById('btn-no').style.display = 'none';
+  const btn = document.getElementById('btn-no');
+  btn.classList.remove('huyendo');
+  btn.style.left = '';
+  btn.style.top  = '';
   mostrar('s-cita');
   rellenarOpciones();
 }
 
 // ── BOTÓN NO ──
 let noCount = 0;
+let yaHuyendo = false;
 const mensajesNo = [
   "Le diste no?",
   "yyyy no puede ser",
@@ -411,29 +423,40 @@ const mensajesNo = [
   "Es una recomendacion, creo que el Si funciona",
   "De verdad, haber intentale de prueba",
 ];
-function posicionarNoCentro() {
-  const btn = document.getElementById('btn-no');
-  btn.style.left = (window.innerWidth / 2 + 20) + 'px';
-  btn.style.top  = (window.innerHeight / 2 + 40) + 'px';
-}
+
 function escaparNo() {
   noCount++;
   window.registrarNo().catch(e => console.error("No error:", e));
+
   const msg = document.getElementById('counter-msg');
   if (msg) msg.textContent = mensajesNo[Math.min(noCount - 1, mensajesNo.length - 1)];
+
   const btn = document.getElementById('btn-no');
-  const bw = btn.offsetWidth || 140;
+
+  if (!yaHuyendo) {
+    // Primera vez: convertir a fixed usando posición actual
+    const rect = btn.getBoundingClientRect();
+    btn.classList.add('huyendo');
+    btn.style.left = rect.left + 'px';
+    btn.style.top  = rect.top  + 'px';
+    yaHuyendo = true;
+  }
+
+  // Huir a posición aleatoria
+  const bw = btn.offsetWidth  || 140;
   const bh = btn.offsetHeight || 52;
   const margin = 20;
-  btn.style.left = (margin + Math.random() * (window.innerWidth  - bw - margin * 2)) + 'px';
-  btn.style.top  = (margin + Math.random() * (window.innerHeight - bh - margin * 2)) + 'px';
+  const maxX = window.innerWidth  - bw - margin;
+  const maxY = window.innerHeight - bh - margin;
+  btn.style.left = (margin + Math.random() * (maxX - margin)) + 'px';
+  btn.style.top  = (margin + Math.random() * (maxY - margin)) + 'px';
 }
 
 // ── OPCIONES CITA ──
 const actividades = [
   "☕ Café", "⛱️ Playa", "🍕 Comer algo",
   "🎬 Cine", "🐘 Zoo", "🚶 Parque",
-  "🐋 Sea world", "🌽 Tostilocos", "🎁 Sorprendeme"
+  "🐋 Sea world", "🌽 Tostilocos", "🎁 Otro"
 ];
 function rellenarOpciones() {
   const grid = document.getElementById('opciones');
@@ -478,18 +501,16 @@ async function confirmar() {
 
   const datos = { actividad, fecha: fechaFmt, hora: horaFmt };
 
-  // 1. Firebase
   try {
     await window.guardarEnFirebase(datos);
   } catch (e) {
     console.error("Firebase error:", e);
     mostrarToast('⚠️ Error al guardar en Firebase', '#e05');
     btnConf.disabled = false;
-    btnConf.textContent = 'Confirmar nuestra cita ❤️';
+    btnConf.textContent = 'Confirmar cita';
     return;
   }
 
-  // 2. EmailJS
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email:  "aaronarcegonzalez66@gmail.com",
@@ -502,7 +523,6 @@ async function confirmar() {
     mostrarToast('✅ Guardado, pero el correo falló', '#f97');
   }
 
-  // 3. Resultado
   document.getElementById('resultado').innerHTML = `
     <div class="resultado-box">
       <h3>Ok entonces quedo</h3>
@@ -512,12 +532,10 @@ async function confirmar() {
     </div>
   `;
 
-  mostrarToast('✅ ¡Guardado y correo enviado!');
+  mostrarToast('✅ ¡Guardado!');
   btnConf.disabled = false;
-  btnConf.textContent = 'Confirmar nuestra cita ❤️';
+  btnConf.textContent = 'Confirmar 😊';
 }
-
-document.getElementById('btn-no').style.display = 'none';
 </script>
 </body>
 </html>
